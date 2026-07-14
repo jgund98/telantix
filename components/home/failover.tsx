@@ -43,9 +43,8 @@ export function Failover() {
               The call doesn&apos;t.
             </h2>
             <p className="mt-6 max-w-md text-[1.05rem] leading-relaxed text-mute text-pretty">
-              Every route has an answer-rate floor we won&apos;t dip below. The
-              moment one slips, we move your live campaign to the next best route —
-              mid-dial, with nothing dropped and nobody paged.
+              Every route has an answer-rate floor. The moment one slips, we move
+              your live campaign to the next best route — mid-dial, nothing dropped.
             </p>
 
             <div className="mt-10 space-y-0 border-t border-hair">

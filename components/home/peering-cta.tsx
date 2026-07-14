@@ -28,10 +28,10 @@ export function PeeringCTA() {
             <h2 className="display mt-6 text-paper text-[clamp(2.8rem,8vw,6rem)]">
               Open a route.
             </h2>
-            <p className="mt-6 max-w-lg text-[1.1rem] leading-relaxed text-paper/80 text-pretty">
+            <p className="mt-6 max-w-md text-[1.1rem] leading-relaxed text-paper/80 text-pretty">
               Tell us what you dial and how hard. We&apos;ll stand up a dialer-grade
-              trunk, hand you a live answer rate, and let it make the case. No
-              minimums — and you&apos;ll talk to an operator, not a rep.
+              trunk and hand you a live answer rate. No minimums — and a real
+              operator on the line.
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-3">
               <ButtonLink href="/connect" variant="signal">

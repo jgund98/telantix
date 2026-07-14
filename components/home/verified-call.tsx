@@ -45,10 +45,8 @@ export function VerifiedCall() {
               We sign your calls. Not somebody three hops away.
             </h2>
             <p className="mt-6 max-w-md text-[1.05rem] leading-relaxed text-mute text-pretty">
-              Every reseller your call passes through re-wraps its verification and
-              waters it down. We hold our own carrier certificate and sign each call
-              at the edge, so it lands as a real, verified number — not
-              &ldquo;Spam Likely.&rdquo;
+              Every reseller in the path waters your caller ID down. We sign at the
+              edge — so it lands verified, not &ldquo;Spam Likely.&rdquo;
             </p>
             <p className="mt-6 text-[0.9rem] text-mute-2 text-pretty">
               <span className="mono-label text-[0.7rem] text-signal">TRY IT —</span>{" "}

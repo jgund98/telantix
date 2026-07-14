@@ -145,9 +145,8 @@ export function Services() {
               Three services, built for the dialer.
             </h2>
           </div>
-          <p className="max-w-sm text-[1.02rem] leading-relaxed text-mute text-pretty">
-            Trunks, numbers and termination over one carrier-direct connection.
-            Read it like a spec sheet, because that is what it is.
+          <p className="max-w-xs text-[1.02rem] leading-relaxed text-mute text-pretty">
+            One carrier-direct connection. Read it like a spec sheet.
           </p>
         </div>
 

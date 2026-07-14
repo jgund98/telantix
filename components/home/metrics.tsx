@@ -79,9 +79,8 @@ export function Metrics() {
               Proven, not promised.
             </h2>
           </div>
-          <p className="max-w-sm text-[1rem] leading-relaxed text-mute text-pretty">
-            Straight from the live network. Every number here is one we&apos;re
-            happy to put on your bill.
+          <p className="max-w-[15rem] text-[1rem] leading-relaxed text-mute text-pretty">
+            Straight from the live network — and onto your bill.
           </p>
         </div>
 

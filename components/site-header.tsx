@@ -75,6 +75,7 @@ export function SiteHeader() {
         <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 md:px-8 h-[76px]">
           <Link href="/" aria-label="Telantix home" className="group">
             <Lockup
+              animated
               markClass="h-8 w-auto transition-transform duration-500 group-hover:rotate-[-6deg]"
               textClass="text-[1.7rem]"
             />

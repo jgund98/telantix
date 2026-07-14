@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Mark, Wordmark } from "./brand";
+import { useRef } from "react";
+import { useInView } from "framer-motion";
+import { AnimatedMark, Wordmark } from "./brand";
 
 const COLUMNS = [
   {
@@ -31,6 +33,8 @@ const COLUMNS = [
 ];
 
 export function SiteFooter() {
+  const markRef = useRef(null);
+  const markIn = useInView(markRef, { once: true, margin: "-40px" });
   return (
     <footer className="bg-ink text-paper">
       {/* Peering strip */}
@@ -53,8 +57,8 @@ export function SiteFooter() {
         <div className="grid grid-cols-1 gap-14 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           {/* Brand block */}
           <div>
-            <div className="flex items-center gap-3">
-              <Mark variant="paper" className="h-9 w-auto" />
+            <div ref={markRef} className="flex items-center gap-3">
+              <AnimatedMark variant="paper" className="h-9 w-auto" play={markIn} />
               <Wordmark variant="paper" className="text-[1.9rem]" />
             </div>
             <p className="mt-5 max-w-xs text-[0.95rem] leading-relaxed text-paper/70 text-pretty">

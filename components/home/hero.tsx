@@ -65,10 +65,9 @@ export function Hero() {
               transition={{ duration: 0.7, delay: 0.5, ease: EASE }}
               className="mt-7 max-w-md text-[1.075rem] leading-relaxed text-mute text-pretty"
             >
-              We&apos;re the SIP carrier built for the people who dial for a
-              living. Answer-rate-obsessed routing, caller IDs that stay clean,
-              and as many channels as you can throw at them — signed at the edge,
-              with no resellers watering your calls down.
+              The SIP carrier built for the people who dial for a living. Clean
+              caller IDs, no channel caps, and answer rates you can actually
+              watch.
             </motion.p>
 
             <motion.div

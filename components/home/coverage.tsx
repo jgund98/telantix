@@ -82,10 +82,9 @@ export function Coverage() {
               Every area code, a route we can prove.
             </h2>
             <p className="mt-6 max-w-sm text-[1.02rem] leading-relaxed text-paper/80 text-pretty">
-              A live look at answer rates across the U.S. metros you dial most. The
-              orange marks are premium direct routes with a guaranteed answer-rate
-              floor — the rest are graded and tuned around the clock. International
-              termination is available on request.
+              Live answer rates across the U.S. metros you dial most. Orange marks
+              are premium direct routes with a guaranteed floor. International on
+              request.
             </p>
             <div className="mt-10 flex items-center gap-8">
               <div>

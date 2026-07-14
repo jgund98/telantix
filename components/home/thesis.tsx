@@ -4,6 +4,12 @@ import { Container } from "@/components/ui";
 import { Reveal } from "@/components/motion";
 import { Mark } from "@/components/brand";
 
+const CREDO = [
+  "We sign every call at the edge.",
+  "We never cap your channels.",
+  "We answer as operators, not reps.",
+];
+
 export function Thesis() {
   return (
     <section className="relative overflow-hidden border-b border-hair bg-paper py-24 md:py-36">
@@ -28,25 +34,28 @@ export function Thesis() {
             </div>
           </Reveal>
 
-          {/* The statement */}
+          {/* The statement + credo */}
           <div className="max-w-4xl">
             <Reveal>
-              <p className="text-[clamp(1.6rem,3.6vw,2.9rem)] font-medium leading-[1.18] tracking-tight text-ink text-balance">
-                Your generic carrier doesn&apos;t know what you do. It throttles
-                your traffic at the worst moment, lets your caller IDs get flagged,
-                and puts a rep on the phone who&apos;s never touched a dialer.{" "}
-                <span className="text-signal">We built the opposite.</span>
+              <p className="text-[clamp(1.7rem,3.8vw,3rem)] font-medium leading-[1.14] tracking-tight text-ink text-balance">
+                Your carrier doesn&apos;t know what you do.{" "}
+                <span className="text-signal">We built the one that does.</span>
               </p>
             </Reveal>
 
-            <Reveal delay={0.12}>
-              <p className="mt-8 max-w-2xl text-[1.05rem] leading-relaxed text-mute text-pretty">
-                We run our own dialers on our own network, so we know a
-                Monday-morning spike when we see one. Your calls get signed at the
-                edge, your channels never hit an artificial cap, and when you call
-                support you get someone who speaks VICIdial — not a script.
-              </p>
-            </Reveal>
+            {/* Credo — punch lines, not prose */}
+            <div className="mt-12 border-t border-hair">
+              {CREDO.map((line, i) => (
+                <Reveal key={line} delay={0.08 + i * 0.08}>
+                  <div className="group flex items-baseline gap-5 border-b border-hair py-6">
+                    <span className="mt-2 block h-2.5 w-2.5 shrink-0 bg-signal transition-transform duration-300 group-hover:scale-125" />
+                    <span className="text-[clamp(1.35rem,2.7vw,2rem)] font-medium leading-tight tracking-tight text-ink">
+                      {line}
+                    </span>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
           </div>
         </div>
       </Container>
