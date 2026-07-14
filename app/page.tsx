@@ -5,6 +5,7 @@ import { Services } from "@/components/home/services";
 import { Coverage } from "@/components/home/coverage";
 import { Failover } from "@/components/home/failover";
 import { Metrics } from "@/components/home/metrics";
+import { JunctionField } from "@/components/home/junction-field";
 import { PeeringCTA } from "@/components/home/peering-cta";
 
 export default function HomePage() {
@@ -17,6 +18,7 @@ export default function HomePage() {
       <Coverage />
       <Failover />
       <Metrics />
+      <JunctionField />
       <PeeringCTA />
     </>
   );

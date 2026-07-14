@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Container } from "@/components/ui";
+import { AnimatedMark } from "@/components/brand";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -17,8 +18,12 @@ export function PageHero({
   meta?: { k: string; v: string }[];
 }) {
   return (
-    <section className="border-b border-hair bg-paper pt-16 pb-16 md:pt-20 md:pb-20">
-      <Container>
+    <section className="relative overflow-hidden border-b border-hair bg-paper pt-16 pb-16 md:pt-20 md:pb-20">
+      {/* Junction mark — quiet brand texture, flexes in on load */}
+      <div className="pointer-events-none absolute -right-12 -top-8 hidden opacity-[0.05] md:block" aria-hidden>
+        <AnimatedMark variant="ink" className="h-[380px] w-auto" />
+      </div>
+      <Container className="relative z-10">
         <motion.span
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}

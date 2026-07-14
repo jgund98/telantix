@@ -90,16 +90,32 @@ export function SiteFooter() {
           ))}
         </div>
 
-        <div className="mt-16 flex flex-col gap-4 border-t border-hair-ink pt-8 md:flex-row md:items-center md:justify-between">
-          <p className="mono-label text-[0.7rem] text-paper/70">
-            © {new Date().getFullYear()} TELANTIX — WHOLESALE VOICE. ALL ROUTES RESERVED.
-          </p>
-          <div className="flex gap-6 mono-label text-[0.7rem] text-paper/70">
-            <a href="mailto:hello@telantix.com" className="hover:text-signal transition-colors">
-              HELLO@TELANTIX.COM
-            </a>
+        {/* Legal + utility bar */}
+        <div className="mt-16 flex flex-col gap-5 border-t border-hair-ink pt-8">
+          <div className="flex flex-wrap gap-x-6 gap-y-2 mono-label text-[0.7rem] text-paper/70">
+            <Link href="/privacy" className="hover:text-signal transition-colors">
+              PRIVACY POLICY
+            </Link>
             <span className="text-hair-ink">·</span>
-            <span>99.99% UPTIME</span>
+            <Link href="/terms" className="hover:text-signal transition-colors">
+              TERMS OF SERVICE
+            </Link>
+            <span className="text-hair-ink">·</span>
+            <Link href="/acceptable-use" className="hover:text-signal transition-colors">
+              ACCEPTABLE USE
+            </Link>
+          </div>
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <p className="mono-label text-[0.7rem] text-paper/70">
+              © {new Date().getFullYear()} TELANTIX — WHOLESALE VOICE. ALL ROUTES RESERVED.
+            </p>
+            <div className="flex gap-6 mono-label text-[0.7rem] text-paper/70">
+              <a href="mailto:hello@telantix.com" className="hover:text-signal transition-colors">
+                HELLO@TELANTIX.COM
+              </a>
+              <span className="text-hair-ink">·</span>
+              <span>99.99% UPTIME</span>
+            </div>
           </div>
         </div>
       </div>
