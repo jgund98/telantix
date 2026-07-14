@@ -1,272 +1,302 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Container, Eyebrow } from "@/components/ui";
 
 /**
- * Interactive sales piece — "Signed at the edge."
- * Drag the middlemen between you and the destination carrier and watch
- * STIR/SHAKEN attestation fall from A to nothing, the caller ID flip from
- * your name to "Spam Likely", and the answer rate collapse. Telantix is the
- * zero-hop option: we hold our own certificate and sign every call at the edge.
+ * "We sign your calls." — the degradation instrument.
+ * One signal path, drawn full-width. Add middlemen and watch the caller ID
+ * literally decode into "SPAM LIKELY": the readout scrambles, the attestation
+ * stamp downgrades, the answer-rate ruler drains. Typography does the work —
+ * no cards, no panels.
  */
 
 type Stop = {
-  hops: number;
-  att: string; // attestation letter
-  status: string;
   caller: string;
+  sub: string;
+  grade: string;
+  gradeLabel: string;
   answer: number;
   verified: boolean;
 };
 
 const STOPS: Stop[] = [
-  { hops: 0, att: "A", status: "Verified caller", caller: "ACME SUPPORT", answer: 78, verified: true },
-  { hops: 1, att: "B", status: "Unverified", caller: "(512) 555-0148", answer: 57, verified: false },
-  { hops: 2, att: "C", status: "Unknown number", caller: "(512) 555-0148", answer: 41, verified: false },
-  { hops: 3, att: "—", status: "Spam Likely", caller: "SPAM LIKELY", answer: 28, verified: false },
+  { caller: "ACME SUPPORT", sub: "VERIFIED CALLER", grade: "A", gradeLabel: "SIGNED AT THE EDGE", answer: 78, verified: true },
+  { caller: "(512) 555-0148", sub: "UNVERIFIED", grade: "B", gradeLabel: "PARTIAL ATTESTATION", answer: 57, verified: false },
+  { caller: "UNKNOWN CALLER", sub: "NO IDENTITY", grade: "C", gradeLabel: "GATEWAY ATTESTATION", answer: 41, verified: false },
+  { caller: "SPAM LIKELY", sub: "BLOCKED BY MOST PHONES", grade: "—", gradeLabel: "UNSIGNED", answer: 28, verified: false },
 ];
 
-const EASE = [0.22, 1, 0.36, 1] as const;
+const GLYPHS = "TELANTIX#0123456789*/+—";
+
+/** Decode-scramble: on change, the text resolves left-to-right through noise. */
+function useScramble(target: string, duration = 620) {
+  const [display, setDisplay] = useState(target);
+  const prev = useRef(target);
+
+  useEffect(() => {
+    if (prev.current === target) return;
+    prev.current = target;
+    const start = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const p = Math.min((now - start) / duration, 1);
+      const settled = Math.floor(target.length * p);
+      let out = target.slice(0, settled);
+      for (let i = settled; i < target.length; i++) {
+        const ch = target[i];
+        out += ch === " " ? " " : GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+      }
+      setDisplay(out);
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration]);
+
+  return display;
+}
+
+/** The signal path: Junction mark → hops → carrier. Packet runs it on loop. */
+function SignalPath({ hops }: { hops: number }) {
+  const fractions = Array.from({ length: hops }, (_, i) => (i + 1) / (hops + 1));
+  const segs = hops + 1;
+
+  // packet opacity steps down at each hop it crosses
+  const opacityValues: number[] = [1];
+  const opacityTimes: number[] = [0];
+  fractions.forEach((f) => {
+    const before = 1 - (opacityValues.length - 1) * 0.3;
+    opacityValues.push(before, Math.max(0.25, before - 0.3));
+    opacityTimes.push(f, f);
+  });
+  opacityValues.push(opacityValues[opacityValues.length - 1]);
+  opacityTimes.push(1);
+
+  return (
+    <div className="relative">
+      {/* endpoint labels */}
+      <div className="mb-3 flex items-center justify-between mono-label text-[0.62rem] text-stone">
+        <span>YOU · ON TELANTIX</span>
+        <span>DESTINATION CARRIER</span>
+      </div>
+
+      <div className="relative flex h-12 items-center">
+        {/* the Junction — we stand at the signing edge */}
+        <svg viewBox="0 0 88 108" className="relative z-10 h-9 w-auto shrink-0" aria-hidden>
+          <polygon points="8,20 36,20 43.5,27.5 29.5,41.5" fill="var(--color-ink)" />
+          <polygon points="66.5,50.5 88,72 60,72 52.5,64.5" fill="var(--color-ink)" />
+          <polygon points="0,80 80,0 80,28 0,108" fill="var(--color-signal)" />
+        </svg>
+
+        {/* track */}
+        <div className="relative mx-4 h-12 flex-1">
+          {/* segments — each hop dims the signal that leaves it */}
+          <div className="absolute inset-x-0 top-1/2 flex -translate-y-1/2">
+            {Array.from({ length: segs }).map((_, i) => (
+              <div
+                key={`${hops}-${i}`}
+                className="h-[2.5px] flex-1"
+                style={{
+                  background: "var(--color-signal)",
+                  opacity: Math.max(0.18, 1 - i * 0.3),
+                }}
+              />
+            ))}
+          </div>
+
+          {/* hop nodes */}
+          <AnimatePresence>
+            {fractions.map((f, i) => (
+              <motion.span
+                key={`hop-${i}`}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 420, damping: 22 }}
+                className="absolute top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center"
+                style={{ left: `${f * 100}%` }}
+              >
+                <span className="h-4 w-4 rounded-full border-[2.5px] border-stone bg-paper" />
+                <span className="absolute top-6 mono-label text-[0.56rem] text-stone whitespace-nowrap">
+                  RESELLER
+                </span>
+              </motion.span>
+            ))}
+          </AnimatePresence>
+
+          {/* running packet — dims as it crosses each hop */}
+          <motion.div
+            key={`pkt-${hops}`}
+            className="absolute top-1/2 z-20 -translate-y-1/2"
+            initial={{ left: "0%" }}
+            animate={{ left: "100%" }}
+            transition={{ duration: 2.6, ease: "linear", repeat: Infinity }}
+          >
+            <motion.span
+              key={`pkt-o-${hops}`}
+              className="block h-3 w-3 -translate-x-1/2 rounded-full bg-signal"
+              initial={{ opacity: 1 }}
+              animate={{ opacity: opacityValues }}
+              transition={{ duration: 2.6, ease: "linear", repeat: Infinity, times: opacityTimes }}
+            />
+          </motion.div>
+        </div>
+
+        {/* carrier terminal */}
+        <span className="relative z-10 block h-4 w-4 shrink-0 bg-ink" />
+      </div>
+    </div>
+  );
+}
 
 export function VerifiedCall() {
   const [hops, setHops] = useState(0);
   const stop = STOPS[hops];
+  const scrambled = useScramble(stop.caller);
 
   return (
     <section className="border-b border-hair bg-paper py-24 md:py-32">
       <Container>
-        <div className="grid gap-12 lg:grid-cols-[0.82fr_1.18fr] lg:gap-20">
-          {/* Copy */}
+        {/* Header row */}
+        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div>
             <Eyebrow>Caller ID that survives</Eyebrow>
-            <h2 className="display mt-5 text-ink text-[clamp(2rem,4.6vw,3.4rem)] text-balance">
+            <h2 className="display mt-5 max-w-2xl text-ink text-[clamp(2rem,4.6vw,3.4rem)] text-balance">
               We sign your calls. Not somebody three hops away.
             </h2>
-            <p className="mt-6 max-w-md text-[1.05rem] leading-relaxed text-mute text-pretty">
-              Every reseller in the path waters your caller ID down. We sign at the
-              edge — so it lands verified, not &ldquo;Spam Likely.&rdquo;
-            </p>
-            <p className="mt-6 text-[0.9rem] text-mute-2 text-pretty">
-              <span className="mono-label text-[0.7rem] text-signal">TRY IT —</span>{" "}
-              add middlemen and watch what reaches the phone.
-            </p>
           </div>
+          <p className="max-w-xs text-[1rem] leading-relaxed text-mute text-pretty">
+            Every reseller re-wraps your caller ID and waters it down. Add
+            middlemen — watch what survives.
+          </p>
+        </div>
 
-          {/* Interactive */}
-          <div className="border border-hair bg-white">
-            {/* Route strip */}
-            <div className="border-b border-hair px-6 py-7 md:px-8">
-              <div className="mb-5 flex items-center justify-between">
-                <span className="mono-label text-[0.66rem] text-stone">
-                  YOUR CALL&apos;S PATH
-                </span>
-                <span className="mono-label text-[0.66rem] text-stone tnum">
-                  {hops === 0
-                    ? "0 MIDDLEMEN"
-                    : `${hops} ${hops > 1 ? "MIDDLEMEN" : "MIDDLEMAN"}`}
-                </span>
-              </div>
-              <RouteStrip hops={hops} verified={stop.verified} />
+        {/* The signal path */}
+        <div className="mt-14 md:mt-16">
+          <SignalPath hops={hops} />
+        </div>
+
+        {/* Controls — a counter, not a widget */}
+        <div className="mt-12 flex flex-wrap items-center gap-3 border-t border-hair pt-6 md:mt-14">
+          <span className="mono-label mr-auto text-[0.66rem] text-stone">
+            MIDDLEMEN<span className="hidden sm:inline"> BETWEEN YOU AND THE CARRIER</span> · {hops} / 3
+          </span>
+          <button
+            onClick={() => setHops((h) => Math.max(0, h - 1))}
+            disabled={hops === 0}
+            className="mono-label border border-ink/25 px-5 py-3 text-[0.72rem] text-ink transition-colors hover:border-ink hover:bg-ink hover:text-paper disabled:pointer-events-none disabled:opacity-25"
+          >
+            − REMOVE
+          </button>
+          <button
+            onClick={() => setHops((h) => Math.min(3, h + 1))}
+            disabled={hops === 3}
+            className="mono-label bg-ink px-5 py-3 text-[0.72rem] text-paper transition-colors hover:bg-signal disabled:pointer-events-none disabled:opacity-25"
+          >
+            + ADD MIDDLEMAN
+          </button>
+        </div>
+
+        {/* The readout — what their phone shows, in poster type */}
+        <div className="mt-12 grid items-end gap-10 md:mt-16 md:grid-cols-[1fr_auto] md:gap-16">
+          <div className="min-w-0">
+            <div className="mono-label text-[0.66rem] text-stone">
+              WHAT THEIR PHONE SHOWS
             </div>
-
-            {/* Phone + attestation */}
-            <div className="grid grid-cols-1 sm:grid-cols-[1.2fr_1fr]">
-              {/* Incoming call display */}
-              <div className="border-b border-hair p-6 sm:border-b-0 sm:border-r md:p-8">
-                <span className="mono-label text-[0.62rem] text-stone">
-                  WHAT THE PHONE SHOWS
-                </span>
-                <div className="mt-4 flex items-center gap-3">
-                  <div
-                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${
-                      stop.verified ? "bg-signal" : "bg-paper-2"
-                    }`}
-                  >
-                    {stop.verified ? (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-                        <path d="M5 12.5l4.5 4.5L19 7" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    ) : (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-                        <path d="M12 8v5" stroke="var(--color-mute)" strokeWidth="2.5" strokeLinecap="round" />
-                        <circle cx="12" cy="17" r="1.4" fill="var(--color-mute)" />
-                      </svg>
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <motion.div
-                      key={stop.caller}
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.35, ease: EASE }}
-                      className={`truncate text-[1.15rem] font-bold leading-tight ${
-                        stop.verified ? "text-ink" : "text-mute"
-                      }`}
-                    >
-                      {stop.caller}
-                    </motion.div>
-                    <div className="mono-label text-[0.66rem] text-stone">
-                      INCOMING CALL
-                    </div>
-                  </div>
-                </div>
-                <motion.div
-                  key={stop.status}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.35 }}
-                  className={`mt-5 inline-flex items-center gap-2 border px-3 py-1.5 ${
-                    stop.verified
-                      ? "border-signal/40 text-signal"
-                      : "border-hair text-mute-2"
+            <div
+              className={`display mt-4 break-words text-[clamp(2.3rem,7.4vw,6rem)] tnum transition-colors duration-300 ${
+                stop.verified ? "text-ink" : hops === 3 ? "text-stone" : "text-mute"
+              }`}
+            >
+              {scrambled}
+            </div>
+            <div className="mt-4 flex items-center gap-2.5">
+              <span
+                className={`block h-2 w-2 ${
+                  stop.verified ? "bg-signal" : "border border-stone"
+                }`}
+              />
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={stop.sub}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.2 }}
+                  className={`mono-label text-[0.7rem] ${
+                    stop.verified ? "text-signal" : "text-mute-2"
                   }`}
                 >
-                  <span className="h-1.5 w-1.5" style={{ background: stop.verified ? "var(--color-signal)" : "var(--color-stone)" }} />
-                  <span className="mono-label text-[0.7rem]">{stop.status.toUpperCase()}</span>
-                </motion.div>
-              </div>
-
-              {/* Attestation + answer rate */}
-              <div className="p-6 md:p-8">
-                <span className="mono-label text-[0.62rem] text-stone">
-                  SIGNATURE
-                </span>
-                <div className="mt-3 flex items-baseline gap-3">
-                  <motion.span
-                    key={stop.att}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3, ease: EASE }}
-                    className={`display text-[2.6rem] leading-none ${
-                      stop.verified ? "text-signal" : "text-stone"
-                    }`}
-                  >
-                    {stop.att}
-                  </motion.span>
-                  <span className="text-[0.85rem] text-mute">
-                    {stop.att === "A" ? "full attestation" : stop.att === "—" ? "no signature" : "downgraded"}
-                  </span>
-                </div>
-
-                <div className="mt-7">
-                  <div className="flex items-baseline justify-between">
-                    <span className="mono-label text-[0.62rem] text-stone">LIKELY ANSWER RATE</span>
-                    <motion.span
-                      key={stop.answer}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className={`mono-label text-[1rem] tnum ${stop.verified ? "text-ink" : "text-mute"}`}
-                    >
-                      {stop.answer}%
-                    </motion.span>
-                  </div>
-                  <div className="mt-2 h-2 w-full bg-paper-2">
-                    <motion.div
-                      className="h-full"
-                      style={{ background: stop.verified ? "var(--color-signal)" : "var(--color-stone)" }}
-                      animate={{ width: `${stop.answer}%` }}
-                      transition={{ duration: 0.5, ease: EASE }}
-                    />
-                  </div>
-                </div>
-              </div>
+                  {stop.sub}
+                </motion.span>
+              </AnimatePresence>
             </div>
+          </div>
 
-            {/* Control */}
-            <div className="border-t border-hair px-6 py-6 md:px-8">
-              <div className="mb-3 flex items-center justify-between">
-                <span className="mono-label text-[0.62rem] text-stone">
-                  MIDDLEMEN BETWEEN YOU AND THE CARRIER
-                </span>
-              </div>
-              <div className="relative flex items-center justify-between">
-                {/* track */}
-                <div className="absolute left-0 right-0 top-1/2 h-px -translate-y-1/2 bg-hair" />
-                {STOPS.map((s) => {
-                  const active = s.hops === hops;
-                  return (
-                    <button
-                      key={s.hops}
-                      onClick={() => setHops(s.hops)}
-                      className="relative z-10 flex flex-col items-center gap-2"
-                      aria-label={`${s.hops} middlemen`}
-                      aria-pressed={active}
-                    >
-                      <span
-                        className={`block h-4 w-4 rounded-full border-2 transition-all ${
-                          active
-                            ? s.hops === 0
-                              ? "border-signal bg-signal scale-125"
-                              : "border-ink bg-ink scale-125"
-                            : "border-stone bg-paper hover:border-ink"
-                        }`}
-                      />
-                      <span
-                        className={`mono-label text-[0.62rem] tnum ${
-                          active ? "text-ink" : "text-stone"
-                        }`}
-                      >
-                        {s.hops === 0 ? "US" : s.hops}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-              <p className="mt-4 text-[0.82rem] text-mute-2 text-pretty">
-                {hops === 0
-                  ? "Direct on Telantix — signed at the edge, A-level attestation, no one to water it down."
-                  : `${hops} reseller${hops > 1 ? "s" : ""} in the path. Each hop re-signs your call and drops the attestation a level.`}
-              </p>
+          {/* Attestation stamp */}
+          <div className="shrink-0">
+            <motion.div
+              key={stop.grade}
+              initial={{ scale: 1.45, opacity: 0, rotate: -9 }}
+              animate={{ scale: 1, opacity: 1, rotate: -3 }}
+              transition={{ type: "spring", stiffness: 320, damping: 16 }}
+              className={`inline-flex flex-col items-center border-[3px] px-8 py-5 md:px-10 md:py-6 ${
+                stop.verified ? "border-signal" : "border-stone border-dashed"
+              }`}
+            >
+              <span
+                className={`display text-[clamp(3.4rem,7vw,5.6rem)] leading-none ${
+                  stop.verified ? "text-signal" : "text-stone"
+                }`}
+              >
+                {stop.grade}
+              </span>
+              <span className="mono-label mt-2 text-[0.6rem] text-mute whitespace-nowrap">
+                {stop.gradeLabel}
+              </span>
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Answer-rate ruler */}
+        <div className="mt-14 md:mt-16">
+          <div className="flex items-baseline justify-between">
+            <span className="mono-label text-[0.66rem] text-stone">
+              LIKELY ANSWER RATE
+            </span>
+            <span className="display text-ink text-[clamp(1.6rem,3vw,2.4rem)] tnum">
+              {stop.answer}
+              <span className="text-signal">%</span>
+            </span>
+          </div>
+          <div className="relative mt-3 h-8">
+            {/* tick ruler */}
+            <div className="absolute inset-x-0 top-0 flex justify-between">
+              {Array.from({ length: 21 }).map((_, i) => (
+                <span
+                  key={i}
+                  className="w-px bg-hair"
+                  style={{ height: i % 5 === 0 ? 16 : 8 }}
+                />
+              ))}
             </div>
+            {/* fill */}
+            <motion.div
+              className="absolute left-0 top-0 h-4 bg-signal mix-blend-multiply"
+              animate={{ width: `${stop.answer}%` }}
+              transition={{ type: "spring", stiffness: 120, damping: 22 }}
+              style={{ opacity: stop.verified ? 1 : 0.45 }}
+            />
+          </div>
+          <div className="mt-1 flex justify-between mono-label text-[0.6rem] text-stone tnum">
+            <span>0</span>
+            <span>50</span>
+            <span>100</span>
           </div>
         </div>
       </Container>
     </section>
-  );
-}
-
-/** The path from you to the destination carrier, with reseller hops. */
-function RouteStrip({ hops, verified }: { hops: number; verified: boolean }) {
-  const nodes = ["YOU", ...Array.from({ length: hops }, () => "RESELLER"), "CARRIER"];
-  return (
-    <div className="flex items-center">
-      {nodes.map((n, i) => {
-        const isFirst = i === 0;
-        const isLast = i === nodes.length - 1;
-        const isReseller = !isFirst && !isLast;
-        return (
-          <div key={i} className={`flex items-center ${isLast ? "" : "flex-1"}`}>
-            <div className="flex flex-col items-center gap-1.5">
-              <span
-                className={`block h-3 w-3 ${
-                  isFirst
-                    ? "bg-signal"
-                    : isReseller
-                    ? "border border-stone bg-paper"
-                    : "bg-ink"
-                }`}
-                style={{ borderRadius: isReseller ? "9999px" : "0" }}
-              />
-              <span className="mono-label text-[0.54rem] text-stone whitespace-nowrap">
-                {isReseller ? "HOP" : n}
-              </span>
-            </div>
-            {!isLast && (
-              <div className="mx-1.5 h-px flex-1" style={{ background: verified && i === 0 ? "var(--color-signal)" : "var(--color-hair)" }}>
-                <motion.div
-                  className="h-full"
-                  style={{ background: i === 0 && verified ? "var(--color-signal)" : "var(--color-stone)" }}
-                  initial={{ width: "0%" }}
-                  animate={{ width: "100%" }}
-                  transition={{ duration: 0.4, delay: i * 0.05 }}
-                />
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
   );
 }
