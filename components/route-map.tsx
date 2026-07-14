@@ -127,14 +127,27 @@ export function RouteMap({ className }: { className?: string }) {
         </g>
       ))}
 
-      {/* The Junction — geometry from the mark, standing at the crossing */}
+      {/* Fire ping radiating from the junction as it routes each call */}
+      <circle
+        className="junction-ping"
+        cx={JX}
+        cy={JY}
+        r={20}
+        fill="none"
+        stroke="var(--color-signal)"
+        strokeWidth={2}
+      />
+
+      {/* The Junction — the live routing core: pulses and kicks as it fires */}
       <g transform={`translate(${JX - 20} ${JY - 26})`}>
-        <polygon points="4,10 18,10 21.75,13.75 14.75,20.75" fill="var(--color-ink)" />
-        <polygon
-          points="33.25,25.25 44,36 30,36 26.25,32.25"
-          fill="var(--color-ink)"
-        />
-        <polygon points="0,40 40,0 40,14 0,54" fill="var(--color-signal)" />
+        <g className="junction-alive">
+          <polygon points="4,10 18,10 21.75,13.75 14.75,20.75" fill="var(--color-ink)" />
+          <polygon
+            points="33.25,25.25 44,36 30,36 26.25,32.25"
+            fill="var(--color-ink)"
+          />
+          <polygon points="0,40 40,0 40,14 0,54" fill="var(--color-signal)" />
+        </g>
       </g>
 
       {/* Origin marker */}
@@ -259,11 +272,24 @@ export function RouteMapMobile({ className }: { className?: string }) {
         </g>
       ))}
 
-      {/* the junction */}
+      {/* Fire ping radiating from the junction as it routes each call */}
+      <circle
+        className="junction-ping"
+        cx={M_JX}
+        cy={M_JY}
+        r={22}
+        fill="none"
+        stroke="var(--color-signal)"
+        strokeWidth={2.5}
+      />
+
+      {/* the junction — live routing core */}
       <g transform={`translate(${M_JX - 26} ${M_JY - 33})`}>
-        <polygon points="5,13 24,13 29,18 20,27" fill="var(--color-ink)" />
-        <polygon points="44,34 58,48 40,48 35,43" fill="var(--color-ink)" />
-        <polygon points="0,53 53,0 53,18 0,71" fill="var(--color-signal)" />
+        <g className="junction-alive">
+          <polygon points="5,13 24,13 29,18 20,27" fill="var(--color-ink)" />
+          <polygon points="44,34 58,48 40,48 35,43" fill="var(--color-ink)" />
+          <polygon points="0,53 53,0 53,18 0,71" fill="var(--color-signal)" />
+        </g>
       </g>
 
       {/* origin */}

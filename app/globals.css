@@ -114,6 +114,52 @@
   }
 }
 
+/* The Junction, alive — a routing core that kicks as each call fires through */
+@keyframes junction-alive {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+  9% {
+    transform: scale(1.17) rotate(3.5deg);
+  }
+  20% {
+    transform: scale(0.97) rotate(-1.5deg);
+  }
+  33% {
+    transform: scale(1.04) rotate(0deg);
+  }
+  55% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.junction-alive {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: junction-alive 1.7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* A ping radiating from the junction as it fires a call (transform-based
+   so it animates on Safari, which won't animate the SVG r attribute) */
+@keyframes junction-ping {
+  0% {
+    transform: scale(0.45);
+    opacity: 0.5;
+  }
+  70%,
+  100% {
+    transform: scale(1.7);
+    opacity: 0;
+  }
+}
+
+.junction-ping {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: junction-ping 1.7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
 /* A signal packet running a route, from origin to termination */
 @keyframes signal-run {
   0% {
