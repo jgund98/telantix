@@ -8,6 +8,10 @@ import { Container, Eyebrow } from "@/components/ui";
  * turns to face your cursor, brightening as it nears, like a field of routes
  * all orienting to where you point. Built entirely from our own logo.
  * Autonomous drift keeps it alive with no pointer (and on touch).
+ *
+ * Perf contract: the rAF loop only runs while the section is on screen,
+ * reads no layout inside the frame (size comes from a ResizeObserver),
+ * and quantizes values so unchanged cells skip their style writes.
  */
 
 function computeGrid(w: number) {
@@ -18,10 +22,12 @@ function computeGrid(w: number) {
 }
 
 export function JunctionField() {
+  const sectionRef = useRef<HTMLElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const cellRefs = useRef<Array<HTMLDivElement | null>>([]);
   const centers = useRef<Array<{ x: number; y: number }>>([]);
   const pointer = useRef({ x: 0, y: 0, active: false });
+  const size = useRef({ w: 1, h: 1 });
   const [grid, setGrid] = useState({ cols: 12, rows: 6 });
 
   // responsive grid
@@ -37,9 +43,13 @@ export function JunctionField() {
 
   const total = grid.cols * grid.rows;
 
-  // cache centers whenever layout changes
+  // cache cell centers + field size whenever layout changes
   useLayoutEffect(() => {
+    const wrap = wrapRef.current;
+    if (!wrap) return;
+
     const measure = () => {
+      size.current = { w: wrap.clientWidth || 1, h: wrap.clientHeight || 1 };
       centers.current = cellRefs.current.map((el) =>
         el
           ? { x: el.offsetLeft + el.offsetWidth / 2, y: el.offsetTop + el.offsetHeight / 2 }
@@ -48,31 +58,44 @@ export function JunctionField() {
     };
     measure();
     const id = window.setTimeout(measure, 60);
-    return () => window.clearTimeout(id);
+
+    const ro = new ResizeObserver(measure);
+    ro.observe(wrap);
+
+    return () => {
+      window.clearTimeout(id);
+      ro.disconnect();
+    };
   }, [total, grid.cols, grid.rows]);
 
-  // interaction + animation loop
+  // interaction + animation loop — alive only while on screen
   useEffect(() => {
+    const section = sectionRef.current;
     const wrap = wrapRef.current;
-    if (!wrap) return;
+    if (!section || !wrap) return;
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const onMove = (e: PointerEvent) => {
+      // one layout read per pointer event, only while hovering the field
       const r = wrap.getBoundingClientRect();
       pointer.current = { x: e.clientX - r.left, y: e.clientY - r.top, active: true };
     };
     const onLeave = () => {
       pointer.current.active = false;
     };
-    wrap.addEventListener("pointermove", onMove);
-    wrap.addEventListener("pointerleave", onLeave);
+    wrap.addEventListener("pointermove", onMove, { passive: true });
+    wrap.addEventListener("pointerleave", onLeave, { passive: true });
+
+    // last written quantized values per cell — skip no-op style writes
+    let lastAng: Float32Array = new Float32Array(0);
+    let lastNear: Float32Array = new Float32Array(0);
 
     let raf = 0;
+    let running = false;
+
     const render = (t: number) => {
-      const r = wrap.getBoundingClientRect();
-      const w = r.width || 1;
-      const h = r.height || 1;
+      const { w, h } = size.current;
       let fx: number, fy: number;
       if (pointer.current.active) {
         fx = pointer.current.x;
@@ -85,25 +108,50 @@ export function JunctionField() {
       const reach = Math.hypot(w, h) * 0.34;
       const cs = centers.current;
       const cells = cellRefs.current;
+
+      if (lastAng.length !== cells.length) {
+        lastAng = new Float32Array(cells.length).fill(9999);
+        lastNear = new Float32Array(cells.length).fill(-1);
+      }
+
       for (let i = 0; i < cells.length; i++) {
         const el = cells[i];
         const c = cs[i];
         if (!el || !c) continue;
         const dx = fx - c.x;
         const dy = fy - c.y;
-        const ang = Math.atan2(dy, dx) * (180 / Math.PI);
-        const dist = Math.hypot(dx, dy);
-        const near = Math.max(0, 1 - dist / reach);
-        const scale = 0.82 + near * 0.7;
-        el.style.transform = `rotate(${ang + 45}deg) scale(${scale.toFixed(3)})`;
-        el.style.opacity = (0.14 + near * 0.86).toFixed(3);
+        // quantize: 0.5° / 0.01 steps are invisible but let far cells skip writes
+        const ang = Math.round(Math.atan2(dy, dx) * (180 / Math.PI) * 2) / 2;
+        const near = Math.round(Math.max(0, 1 - Math.hypot(dx, dy) / reach) * 100) / 100;
+        if (ang === lastAng[i] && near === lastNear[i]) continue;
+        lastAng[i] = ang;
+        lastNear[i] = near;
+        el.style.transform = `rotate(${ang + 45}deg) scale(${0.82 + near * 0.7})`;
+        el.style.opacity = String(0.14 + near * 0.86);
       }
-      if (!reduced) raf = requestAnimationFrame(render);
+      if (running && !reduced) raf = requestAnimationFrame(render);
     };
-    raf = requestAnimationFrame(render);
+
+    const start = () => {
+      if (running) return;
+      running = true;
+      raf = requestAnimationFrame(render);
+    };
+    const stop = () => {
+      running = false;
+      cancelAnimationFrame(raf);
+    };
+
+    // the loop exists only while the section is actually visible
+    const io = new IntersectionObserver(
+      ([entry]) => (entry.isIntersecting ? start() : stop()),
+      { rootMargin: "80px" }
+    );
+    io.observe(section);
 
     return () => {
-      cancelAnimationFrame(raf);
+      io.disconnect();
+      stop();
       wrap.removeEventListener("pointermove", onMove);
       wrap.removeEventListener("pointerleave", onLeave);
     };
@@ -112,7 +160,10 @@ export function JunctionField() {
   const markPx = grid.cols > 14 ? 26 : grid.cols > 9 ? 34 : 30;
 
   return (
-    <section className="relative overflow-hidden border-y border-hair-ink bg-ink text-paper">
+    <section
+      ref={sectionRef}
+      className="relative overflow-hidden border-y border-hair-ink bg-ink text-paper"
+    >
       {/* Field */}
       <div
         ref={wrapRef}
@@ -127,7 +178,7 @@ export function JunctionField() {
                 cellRefs.current[i] = el;
               }}
               className="will-change-transform"
-              style={{ opacity: 0.14, transition: "opacity 120ms linear" }}
+              style={{ opacity: 0.14 }}
             >
               <svg width={markPx} height={markPx * 1.22} viewBox="0 0 88 108" fill="none">
                 <polygon points="8,20 36,20 43.5,27.5 29.5,41.5" fill="#F4F1EA" opacity="0.5" />

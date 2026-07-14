@@ -1,9 +1,14 @@
 "use client";
 
+import { memo } from "react";
+
 /**
  * Live route diagram — the product, drawn.
  * A signal originates, crosses the junction, and terminates at a
  * destination. Every path is a real corridor; motion carries meaning.
+ *
+ * Both maps are memoized: the hero re-renders every couple of seconds for
+ * its live ticker numbers, and these SVGs (100+ nodes each) never change.
  */
 
 type Route = {
@@ -46,7 +51,7 @@ const ROUTES: Route[] = DESTS.map((dstn, i) => ({
   delay: i * 0.62,
 }));
 
-export function RouteMap({ className }: { className?: string }) {
+export const RouteMap = memo(function RouteMap({ className }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 740 460"
@@ -186,7 +191,7 @@ export function RouteMap({ className }: { className?: string }) {
       </text>
     </svg>
   );
-}
+});
 
 /* ---------------------------------------------------------------
    Mobile — a portrait route map. Calls flow top → junction → out,
@@ -209,7 +214,7 @@ function buildPathMobile(dx: number): string {
   return `M ${M_ORIGIN.x} ${M_ORIGIN.y} C ${M_JX} 130, ${M_JX} 130, ${M_JX} ${M_JY} C ${M_JX} 300, ${dx} 300, ${dx} ${M_DEST_Y}`;
 }
 
-export function RouteMapMobile({ className }: { className?: string }) {
+export const RouteMapMobile = memo(function RouteMapMobile({ className }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 360 470"
@@ -303,4 +308,4 @@ export function RouteMapMobile({ className }: { className?: string }) {
       </text>
     </svg>
   );
-}
+});
