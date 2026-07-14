@@ -19,7 +19,13 @@ const fragmentMono = Fragment_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://telantix.com"),
+  // Absolute base for og:image/canonical URLs — tracks the live Vercel
+  // domain automatically and flips to the custom domain when one is added.
+  metadataBase: new URL(
+    process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : "http://localhost:3960"
+  ),
   title: {
     default: "Telantix — Dialer-Grade SIP for U.S. Call Centers",
     template: "%s — Telantix",
@@ -42,6 +48,12 @@ export const metadata: Metadata = {
       "A-level STIR/SHAKEN signed at the edge, caller IDs that stay clean, and channels with no cap — built by operators, for operators.",
     type: "website",
     siteName: "Telantix",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Telantix — Dialer-Grade SIP for U.S. Call Centers",
+    description:
+      "A-level STIR/SHAKEN signed at the edge, caller IDs that stay clean, and channels with no cap. Routes that terminate.",
   },
   icons: {
     icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
