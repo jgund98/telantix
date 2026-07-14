@@ -19,12 +19,13 @@ const fragmentMono = Fragment_Mono({
 });
 
 export const metadata: Metadata = {
-  // Absolute base for og:image/canonical URLs — tracks the live Vercel
-  // domain automatically and flips to the custom domain when one is added.
+  // Absolute base for og:image/canonical URLs. telantix.com is attached to
+  // the Vercel project but its DNS is not live yet, so the env-reported
+  // production URL would 404 for link scrapers — pin the serving domain
+  // instead. Once DNS resolves, set NEXT_PUBLIC_SITE_URL=https://www.telantix.com
+  // in Vercel env (or update the fallback here).
   metadataBase: new URL(
-    process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-      : "http://localhost:3960"
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://telantix.vercel.app"
   ),
   title: {
     default: "Telantix — Dialer-Grade SIP for U.S. Call Centers",
