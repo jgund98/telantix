@@ -21,12 +21,12 @@ const JX = 322;
 const JY = 232;
 
 const DESTS: { cc: string; label: string; y: number }[] = [
-  { cc: "+1", label: "NANP", y: 60 },
-  { cc: "+44", label: "GBR", y: 130 },
-  { cc: "+49", label: "DEU", y: 200 },
-  { cc: "+234", label: "NGA", y: 270 },
-  { cc: "+91", label: "IND", y: 340 },
-  { cc: "+55", label: "BRA", y: 404 },
+  { cc: "212", label: "NEW YORK", y: 60 },
+  { cc: "213", label: "LOS ANGELES", y: 130 },
+  { cc: "312", label: "CHICAGO", y: 200 },
+  { cc: "713", label: "HOUSTON", y: 270 },
+  { cc: "404", label: "ATLANTA", y: 340 },
+  { cc: "214", label: "DALLAS", y: 404 },
 ];
 
 const DEST_X = 610;
@@ -49,10 +49,10 @@ const ROUTES: Route[] = DESTS.map((dstn, i) => ({
 export function RouteMap({ className }: { className?: string }) {
   return (
     <svg
-      viewBox="0 0 660 460"
+      viewBox="0 0 740 460"
       className={className}
       role="img"
-      aria-label="A signal originating, crossing the Telantix junction, and terminating across destinations."
+      aria-label="A call originating, crossing the Telantix junction, and terminating across U.S. metros."
       fill="none"
     >
       {/* Base corridors — faint, always present */}
@@ -185,11 +185,11 @@ const M_JX = 180;
 const M_JY = 214;
 const M_DEST_Y = 402;
 const M_DESTS = [
-  { cc: "+1", label: "US / CA", x: 40 },
-  { cc: "+44", label: "UK", x: 110 },
-  { cc: "+49", label: "DE", x: 180 },
-  { cc: "+91", label: "IN", x: 250 },
-  { cc: "+55", label: "BR", x: 320 },
+  { cc: "212", label: "NYC", x: 40 },
+  { cc: "213", label: "LA", x: 110 },
+  { cc: "312", label: "CHI", x: 180 },
+  { cc: "305", label: "MIA", x: 250 },
+  { cc: "404", label: "ATL", x: 320 },
 ];
 
 function buildPathMobile(dx: number): string {
