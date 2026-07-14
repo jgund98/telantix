@@ -76,15 +76,30 @@ export function JunctionField() {
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    const onMove = (e: PointerEvent) => {
-      // one layout read per pointer event, only while hovering the field
+    // Touch has no hover: taps and drags drive the focus instead, and the
+    // focal point GLIDES to the finger rather than teleporting. A short
+    // hold after the last touch, then the drift resumes (also gliding).
+    let touchMode = false;
+    let releaseTimer = 0;
+
+    const onPoint = (e: PointerEvent) => {
       const r = wrap.getBoundingClientRect();
       pointer.current = { x: e.clientX - r.left, y: e.clientY - r.top, active: true };
+      if (e.pointerType === "touch") {
+        touchMode = true;
+        window.clearTimeout(releaseTimer);
+        releaseTimer = window.setTimeout(() => {
+          pointer.current.active = false;
+        }, 2200);
+      } else {
+        touchMode = false;
+      }
     };
-    const onLeave = () => {
-      pointer.current.active = false;
+    const onLeave = (e: PointerEvent) => {
+      if (e.pointerType !== "touch") pointer.current.active = false;
     };
-    wrap.addEventListener("pointermove", onMove, { passive: true });
+    wrap.addEventListener("pointermove", onPoint, { passive: true });
+    wrap.addEventListener("pointerdown", onPoint, { passive: true });
     wrap.addEventListener("pointerleave", onLeave, { passive: true });
 
     // last written quantized values per cell — skip no-op style writes
@@ -94,16 +109,38 @@ export function JunctionField() {
     let raf = 0;
     let running = false;
 
+    // rendered focal point — on touch it chases the target instead of
+    // snapping, so taps feel like the network swinging over to you
+    const focus = { x: -1, y: -1 };
+
     const render = (t: number) => {
       const { w, h } = size.current;
-      let fx: number, fy: number;
+      let tx: number, ty: number;
       if (pointer.current.active) {
-        fx = pointer.current.x;
-        fy = pointer.current.y;
+        tx = pointer.current.x;
+        ty = pointer.current.y;
       } else {
         // autonomous drifting focal point — a slow Lissajous sweep
-        fx = w * (0.5 + 0.44 * Math.cos(t * 0.00042));
-        fy = h * (0.5 + 0.4 * Math.sin(t * 0.00055));
+        tx = w * (0.5 + 0.44 * Math.cos(t * 0.00042));
+        ty = h * (0.5 + 0.4 * Math.sin(t * 0.00055));
+      }
+
+      let fx: number, fy: number;
+      if (touchMode) {
+        if (focus.x < 0) {
+          focus.x = tx;
+          focus.y = ty;
+        }
+        focus.x += (tx - focus.x) * 0.085;
+        focus.y += (ty - focus.y) * 0.085;
+        fx = focus.x;
+        fy = focus.y;
+      } else {
+        // mouse: exact, immediate — unchanged desktop feel
+        fx = tx;
+        fy = ty;
+        focus.x = tx;
+        focus.y = ty;
       }
       const reach = Math.hypot(w, h) * 0.34;
       const cs = centers.current;
@@ -152,7 +189,9 @@ export function JunctionField() {
     return () => {
       io.disconnect();
       stop();
-      wrap.removeEventListener("pointermove", onMove);
+      window.clearTimeout(releaseTimer);
+      wrap.removeEventListener("pointermove", onPoint);
+      wrap.removeEventListener("pointerdown", onPoint);
       wrap.removeEventListener("pointerleave", onLeave);
     };
   }, [total]);
@@ -198,8 +237,13 @@ export function JunctionField() {
             Point us anywhere.
           </h2>
           <p className="mt-6 max-w-md text-[1.1rem] leading-relaxed text-paper/80 text-pretty">
-            Every route turns to where you need it. Move your cursor — the whole
-            network follows.
+            Every route turns to where you need it.{" "}
+            <span className="[@media(pointer:coarse)]:hidden">
+              Move your cursor — the whole network follows.
+            </span>
+            <span className="hidden [@media(pointer:coarse)]:inline">
+              Tap anywhere — the whole network turns to you.
+            </span>
           </p>
         </div>
       </Container>
