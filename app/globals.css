@@ -220,7 +220,10 @@
 }
 
 .marquee-track {
-  animation: marquee 42s linear infinite;
+  animation: marquee 58s linear infinite;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 @media (prefers-reduced-motion: reduce) {

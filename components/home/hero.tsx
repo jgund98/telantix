@@ -1,15 +1,17 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Container, ButtonLink } from "@/components/ui";
 import { RouteMap, RouteMapMobile } from "@/components/route-map";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-const TICKER = [
+// "OPS" and "CH" render as live, gently-drifting figures
+const TICKER: string[] = [
   "ANSWER RATE 78%",
-  "49,500 CHANNELS LIVE",
-  "1,247 OPERATORS ONLINE",
+  "CH",
+  "OPS",
   "16 U.S. POPS",
   "14MS MEDIAN LATENCY",
   "A-LEVEL STIR / SHAKEN",
@@ -18,6 +20,21 @@ const TICKER = [
   "NO CHANNEL CAPS",
   "TCPA-READY",
 ];
+
+/** A figure that drifts a little in real time, like a live network stat. */
+function useDrift(base: number, spread: number, step: number, ms: number) {
+  const [n, setN] = useState(base);
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setN((v) => {
+        const next = v + Math.round((Math.random() - 0.48) * step);
+        return Math.min(base + spread, Math.max(base - spread, next));
+      });
+    }, ms);
+    return () => window.clearInterval(id);
+  }, [base, spread, step, ms]);
+  return n;
+}
 
 function Word({ children, delay }: { children: string; delay: number }) {
   return (
@@ -35,6 +52,10 @@ function Word({ children, delay }: { children: string; delay: number }) {
 }
 
 export function Hero() {
+  // live network figures — drift gently so the rail reads as real
+  const ops = useDrift(1247, 40, 5, 2200);
+  const channels = useDrift(49500, 900, 140, 1400);
+
   return (
     <section className="relative overflow-hidden border-b border-hair">
       <Container className="pt-16 pb-0 md:pt-20">
@@ -47,9 +68,9 @@ export function Hero() {
               transition={{ duration: 0.6, ease: EASE }}
               className="flex items-center gap-4"
             >
-              <span className="eyebrow text-mute flex items-center gap-2.5">
-                <span className="inline-block h-[7px] w-[7px] bg-signal" />
-                Dialer-Grade SIP · Built for U.S. Call Centers
+              <span className="flex items-center gap-2.5 font-mono uppercase text-mute whitespace-nowrap text-[0.62rem] tracking-[0.14em] sm:text-[0.6875rem] sm:tracking-[0.22em]">
+                <span className="inline-block h-[7px] w-[7px] shrink-0 bg-signal" />
+                Dialer-Grade SIP · <span className="hidden sm:inline">Built for&nbsp;</span>U.S. Call Centers
               </span>
             </motion.div>
 
@@ -127,9 +148,13 @@ export function Hero() {
             {[...TICKER, ...TICKER].map((t, i) => (
               <span
                 key={i}
-                className="mono-label text-[0.72rem] text-mute flex items-center gap-10"
+                className="mono-label text-[0.72rem] text-mute flex items-center gap-10 tnum"
               >
-                {t}
+                {t === "OPS"
+                  ? `${ops.toLocaleString("en-US")} OPERATORS ONLINE`
+                  : t === "CH"
+                  ? `${channels.toLocaleString("en-US")} CHANNELS LIVE`
+                  : t}
                 <span className="text-signal">▚</span>
               </span>
             ))}
