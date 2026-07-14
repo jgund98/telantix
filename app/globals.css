@@ -1,0 +1,187 @@
+@import "tailwindcss";
+
+/* ============================================================
+   TELANTIX — Wholesale VoIP
+   Paper, ink, and one loud orange. No gradients. No globes.
+   ============================================================ */
+
+@theme {
+  /* Core palette — from the brand sheet */
+  --color-paper: #f4f1ea;
+  --color-paper-2: #ece8de;
+  --color-ink: #16140f;
+  --color-ink-2: #211e17;
+  --color-signal: #f04e00;
+  --color-signal-deep: #c93f00;
+  --color-stone: #a8a294;
+  --color-mute: #55503f;
+  --color-mute-2: #8b8574;
+  --color-hair: #ddd9d0;
+  --color-hair-ink: #33302a;
+  --color-white: #ffffff;
+
+  --font-sans: var(--font-grotesk), system-ui, sans-serif;
+  --font-mono: var(--font-mono-fragment), ui-monospace, monospace;
+
+  --shadow-*: initial;
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-weight: 400;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: var(--color-signal);
+    color: var(--color-white);
+  }
+
+  /* Focus visibility — accessible, on-brand */
+  :focus-visible {
+    outline: 2px solid var(--color-signal);
+    outline-offset: 3px;
+  }
+}
+
+@layer utilities {
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+
+  /* Letterspaced technical caps — the Fragment Mono voice */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    font-weight: 400;
+  }
+
+  .mono-label {
+    font-family: var(--font-mono);
+    letter-spacing: 0.08em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Fluid display type — Swiss, tight, heavy */
+  .display {
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 0.94;
+    text-transform: uppercase;
+  }
+
+  .hair {
+    border-color: var(--color-hair);
+  }
+
+  /* Grid overlay for the Swiss baseline feel */
+  .rule-grid {
+    background-image: linear-gradient(
+      to right,
+      color-mix(in srgb, var(--color-ink) 6%, transparent) 1px,
+      transparent 1px
+    );
+    background-size: calc(100% / 12) 100%;
+  }
+}
+
+/* Route-tracing keyframes — meaningful motion (a signal terminating) */
+@keyframes trace {
+  from {
+    stroke-dashoffset: var(--len, 1000);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* A signal packet running a route, from origin to termination */
+@keyframes signal-run {
+  0% {
+    stroke-dashoffset: 100;
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  92% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: -8;
+    opacity: 0;
+  }
+}
+
+/* A destination node lighting up as a route terminates */
+@keyframes node-arrive {
+  0%,
+  60% {
+    r: 3;
+    fill: var(--color-hair);
+  }
+  74% {
+    r: 6.5;
+    fill: var(--color-signal);
+  }
+  100% {
+    r: 3;
+    fill: var(--color-mute-2);
+  }
+}
+
+@keyframes ring-arrive {
+  0%,
+  62% {
+    r: 3;
+    opacity: 0;
+  }
+  70% {
+    opacity: 0.7;
+  }
+  100% {
+    r: 20;
+    opacity: 0;
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  animation: marquee 42s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

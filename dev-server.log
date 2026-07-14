@@ -1,0 +1,15 @@
+   ▲ Next.js 15.5.4
+   - Local:        http://localhost:3960
+   - Network:      http://10.0.0.6:3960
+
+ ✓ Starting...
+ ✓ Ready in 1679ms
+ ○ Compiling / ...
+ ✓ Compiled / in 3.8s (1471 modules)
+ GET / 200 in 4331ms
+ ✓ Compiled in 485ms (1453 modules)
+ GET / 200 in 121ms
+ ✓ Compiled in 148ms (659 modules)
+ GET / 200 in 34ms
+ ✓ Compiled in 193ms (659 modules)
+ GET / 200 in 37ms
