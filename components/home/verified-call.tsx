@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useInView } from "framer-motion";
 import { Container, Eyebrow } from "@/components/ui";
 
 /**
@@ -153,11 +153,35 @@ function SignalPath({ hops }: { hops: number }) {
 
 export function VerifiedCall() {
   const [hops, setHops] = useState(0);
+  const [touched, setTouched] = useState(false);
+  const sectionRef = useRef(null);
+  const inView = useInView(sectionRef, { once: true, margin: "-35%" });
   const stop = STOPS[hops];
   const scrambled = useScramble(stop.caller);
 
+  // Self-demo: the section adds a middleman and takes it back once, so
+  // there's no mistaking this for a static graphic. Any touch cancels it.
+  useEffect(() => {
+    if (!inView || touched) return;
+    const t1 = window.setTimeout(() => setHops(1), 1500);
+    const t2 = window.setTimeout(() => setHops(0), 3300);
+    return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
+  }, [inView, touched]);
+
+  const add = () => {
+    setTouched(true);
+    setHops((h) => Math.min(3, h + 1));
+  };
+  const remove = () => {
+    setTouched(true);
+    setHops((h) => Math.max(0, h - 1));
+  };
+
   return (
-    <section className="border-b border-hair bg-paper py-24 md:py-32">
+    <section ref={sectionRef} className="border-b border-hair bg-paper py-24 md:py-32">
       <Container>
         {/* Header row */}
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
@@ -183,20 +207,38 @@ export function VerifiedCall() {
           <span className="mono-label mr-auto text-[0.66rem] text-stone">
             MIDDLEMEN<span className="hidden sm:inline"> BETWEEN YOU AND THE CARRIER</span> · {hops} / 3
           </span>
+          {/* Invitation — ping until first touch */}
+          <AnimatePresence>
+            {!touched && (
+              <motion.span
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="mono-label flex items-center gap-2.5 text-[0.68rem] text-signal"
+              >
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-signal opacity-75" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-signal" />
+                </span>
+                TRY IT →
+              </motion.span>
+            )}
+          </AnimatePresence>
           <button
-            onClick={() => setHops((h) => Math.max(0, h - 1))}
+            onClick={remove}
             disabled={hops === 0}
             className="mono-label border border-ink/25 px-5 py-3 text-[0.72rem] text-ink transition-colors hover:border-ink hover:bg-ink hover:text-paper disabled:pointer-events-none disabled:opacity-25"
           >
             − REMOVE
           </button>
-          <button
-            onClick={() => setHops((h) => Math.min(3, h + 1))}
+          <motion.button
+            onClick={add}
             disabled={hops === 3}
+            animate={touched ? { scale: 1 } : { scale: [1, 1.06, 1] }}
+            transition={touched ? { duration: 0.2 } : { duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
             className="mono-label bg-ink px-5 py-3 text-[0.72rem] text-paper transition-colors hover:bg-signal disabled:pointer-events-none disabled:opacity-25"
           >
             + ADD MIDDLEMAN
-          </button>
+          </motion.button>
         </div>
 
         {/* The readout — what their phone shows, in poster type */}

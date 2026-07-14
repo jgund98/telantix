@@ -38,32 +38,6 @@ export function SiteHeader() {
 
   return (
     <>
-      {/* Utility rail — carrier status line, always mono */}
-      <div className="hidden md:block bg-ink text-paper">
-        <div className="mx-auto flex max-w-[1400px] items-center justify-between px-8 py-2">
-          <div className="flex items-center gap-6 mono-label text-[0.6875rem] text-paper/70">
-            <span className="flex items-center gap-2">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-signal opacity-75" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-signal" />
-              </span>
-              SUPPORT ONLINE — 24 / 7 / 365
-            </span>
-            <span className="text-hair-ink">/</span>
-            <span>U.S. VOICE NETWORK</span>
-          </div>
-          <div className="flex items-center gap-6 mono-label text-[0.6875rem] text-paper/70">
-            <span>OPEN TO CONNECT</span>
-            <a
-              href="mailto:hello@telantix.com"
-              className="text-paper hover:text-signal transition-colors"
-            >
-              hello@telantix.com
-            </a>
-          </div>
-        </div>
-      </div>
-
       {/* Primary bar */}
       <header
         className={`sticky top-0 z-50 transition-all duration-300 ${

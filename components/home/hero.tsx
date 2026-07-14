@@ -57,9 +57,11 @@ export function Hero() {
   const channels = useDrift(49500, 900, 140, 1400);
 
   return (
-    <section className="relative overflow-hidden border-b border-hair">
-      <Container className="pt-16 pb-0 md:pt-20">
-        <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-6">
+    // The hero owns the first viewport exactly: header is 76px, the ticker
+    // rides the bottom edge, and the content centers in whatever is left.
+    <section className="relative flex min-h-[calc(100svh-76px)] flex-col overflow-hidden border-b border-hair">
+      <Container className="flex flex-1 items-center py-10 md:py-8">
+        <div className="grid w-full items-center gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-6">
           {/* Left — the statement */}
           <div className="relative z-10">
             <motion.div
@@ -74,7 +76,7 @@ export function Hero() {
               </span>
             </motion.div>
 
-            <h1 className="display mt-7 text-ink text-[clamp(2.9rem,8.2vw,6.6rem)] text-balance">
+            <h1 className="display mt-5 md:mt-7 text-ink text-[clamp(2.9rem,8.2vw,6.6rem)] text-balance [@media(max-height:780px)]:text-[clamp(2.5rem,6.6vw,5rem)]">
               <Word delay={0.05}>Routes</Word>{" "}
               <Word delay={0.13}>that</Word>{" "}
               <Word delay={0.21}>terminate.</Word>
@@ -84,7 +86,7 @@ export function Hero() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.5, ease: EASE }}
-              className="mt-7 max-w-md text-[1.075rem] leading-relaxed text-mute text-pretty"
+              className="mt-5 md:mt-7 max-w-md text-[1.075rem] leading-relaxed text-mute text-pretty"
             >
               The SIP carrier built for the people who dial for a living. Clean
               caller IDs, no channel caps, and answer rates you can actually
@@ -95,7 +97,7 @@ export function Hero() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.62, ease: EASE }}
-              className="mt-9 flex flex-wrap items-center gap-3"
+              className="mt-7 md:mt-9 flex flex-wrap items-center gap-3"
             >
               <ButtonLink href="/connect" variant="signal">
                 Request Routes
@@ -114,12 +116,12 @@ export function Hero() {
             className="relative -mx-6 sm:mx-0"
           >
             {/* Mobile: portrait diagram, sized to fill the screen */}
-            <div className="relative lg:hidden border-t border-hair pt-8">
+            <div className="relative lg:hidden border-t border-hair pt-6">
               <div className="mb-2 flex items-center justify-between px-6 sm:px-0">
                 <span className="eyebrow text-mute-2">Live routing</span>
                 <span className="mono-label text-[0.62rem] text-stone">REAL-TIME</span>
               </div>
-              <RouteMapMobile className="mx-auto block h-auto w-full max-w-[420px]" />
+              <RouteMapMobile className="mx-auto block h-auto max-h-[52svh] w-full max-w-[420px]" />
             </div>
 
             {/* Desktop: landscape diagram */}
@@ -127,14 +129,14 @@ export function Hero() {
               <div className="absolute left-0 top-0 eyebrow text-mute-2">
                 LIVE ROUTING
               </div>
-              <RouteMap className="w-full h-auto" />
+              <RouteMap className="h-auto max-h-[62svh] w-full" />
             </div>
           </motion.div>
         </div>
       </Container>
 
-      {/* Status ticker rail */}
-      <div className="mt-6 border-t border-hair bg-white/60">
+      {/* Status ticker rail — rides the bottom edge of the first viewport */}
+      <div className="border-t border-hair bg-white/60">
         <div
           className="relative flex overflow-hidden py-3"
           style={{
